@@ -28,7 +28,7 @@ export const Header = () => {
                             size={19} />
                         <Input
                             placeholder="Search"
-                            className="h-12 pl-10 border-none rounded-full max-lg:h-11 placeholder:text-primary/80 bg-secondary" />
+                            className="pl-10 border-none rounded-full h-11 placeholder:text-primary/80 bg-secondary" />
                     </div>
                 </div>
                 <div className="flex gap-x-5 max-md:gap-x-3">
@@ -42,13 +42,13 @@ export const Header = () => {
                     </div>
                     <ModeToggle />
                     <Button className="px-6 text-base rounded-full max-md:px-5" asChild>
-                        <Link href={"/sign-in"}>Sign In</Link>
+                        <Link href={"/auth/sign-in"}>Sign In</Link>
                     </Button>
                     <Button
                         variant={"secondary"}
                         className="px-6 text-base rounded-full max-md:px-5 max-sm:hidden"
                         asChild>
-                        <Link href={"/sign-up"}>Sign Up</Link>
+                        <Link href={"/auth/sign-up"}>Sign Up</Link>
                     </Button>
                 </div>
             </div>

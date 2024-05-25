@@ -1,5 +1,7 @@
 "use client";
 
+import { signIn } from "@/actions/sign-in";
+import { AuthError } from "@/components/auth/auth-error";
 import { CardWrapper } from "@/components/auth/card-wrapper";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,25 +12,19 @@ import {
     FormLabel,
     FormMessage
 } from "@/components/ui/form";
-
 import { Input } from "@/components/ui/input";
+
+import { SignInSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const SignInSchema = z.object({
-    email: z.string().email({
-        message: "Email is not valid."
-    }),
-    password: z.string().min(1, {
-        message: "Password is required."
-    })
-})
-
 export const SignInForm = () => {
-    const [passwordVisibility, setPasswordVisibility] = useState(false);
+    const [passwordVisibility, setPasswordVisibility] = useState<boolean | undefined>(false);
+    const [error, setError] = useState<string | undefined>("");
+    const [isPending, startTransition] = useTransition();
 
     const form = useForm<z.infer<typeof SignInSchema>>({
         resolver: zodResolver(SignInSchema),
@@ -39,7 +35,14 @@ export const SignInForm = () => {
     })
 
     function onSubmit(values: z.infer<typeof SignInSchema>) {
-        console.log(values);
+        setError("");
+
+        startTransition(() => {
+            signIn(values)
+                .then((data) => {
+                    setError(data?.error);
+                })
+        })
     }
 
     return (
@@ -59,7 +62,10 @@ export const SignInForm = () => {
                             <FormItem>
                                 <FormLabel>Email</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="john.doe@gmail.com" {...field} />
+                                    <Input
+                                        disabled={isPending}
+                                        placeholder="john.doe@gmail.com"
+                                        {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -75,6 +81,7 @@ export const SignInForm = () => {
                                 <FormControl>
                                     <div className="relative flex">
                                         <Input
+                                            disabled={isPending}
                                             type={passwordVisibility ? "text" : "password"}
                                             placeholder="******"
                                             {...field} />
@@ -98,7 +105,14 @@ export const SignInForm = () => {
                         )}
                     />
 
-                    <Button type="submit" className="w-full">Sign In</Button>
+                    <AuthError message={error} />
+
+                    <Button
+                        disabled={isPending}
+                        type="submit"
+                        className="w-full">
+                        Sign In
+                    </Button>
                 </form>
             </Form>
         </CardWrapper>

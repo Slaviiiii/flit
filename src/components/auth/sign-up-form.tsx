@@ -1,5 +1,8 @@
 "use client";
 
+import { signUp } from "@/actions/sign-up";
+
+import { AuthError } from "@/components/auth/auth-error";
 import { CardWrapper } from "@/components/auth/card-wrapper";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,28 +13,19 @@ import {
     FormLabel,
     FormMessage
 } from "@/components/ui/form";
-
 import { Input } from "@/components/ui/input";
+
+import { SignUpSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const SignUpSchema = z.object({
-    name: z.string().min(1, {
-        message: "Name is reqired."
-    }),
-    email: z.string().email({
-        message: "Email is not valid."
-    }),
-    password: z.string().regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,20}$/,
-        "Password should be 6 to 20 characters long with at least 1 numeric, 1 lowercase and 1 uppercase letter.")
-})
-
 export const SignUpForm = () => {
     const [passwordVisibility, setPasswordVisibility] = useState(false);
+    const [error, setError] = useState<string | undefined>("");
+    const [isPending, startTransition] = useTransition();
 
     const form = useForm<z.infer<typeof SignUpSchema>>({
         resolver: zodResolver(SignUpSchema),
@@ -43,7 +37,14 @@ export const SignUpForm = () => {
     })
 
     function onSubmit(values: z.infer<typeof SignUpSchema>) {
-        console.log(values);
+        setError("");
+
+        startTransition(() => {
+            signUp(values)
+                .then((data) => {
+                    setError(data?.error);
+                })
+        })
     }
 
     return (
@@ -63,7 +64,10 @@ export const SignUpForm = () => {
                             <FormItem>
                                 <FormLabel>Full Name</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="John Doe" {...field} />
+                                    <Input
+                                        disabled={isPending}
+                                        placeholder="John Doe"
+                                        {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -77,7 +81,10 @@ export const SignUpForm = () => {
                             <FormItem>
                                 <FormLabel>Email</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="john.doe@gmail.com" {...field} />
+                                    <Input
+                                        disabled={isPending}
+                                        placeholder="john.doe@gmail.com"
+                                        {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -93,6 +100,7 @@ export const SignUpForm = () => {
                                 <FormControl>
                                     <div className="relative flex">
                                         <Input
+                                            disabled={isPending}
                                             type={passwordVisibility ? "text" : "password"}
                                             placeholder="******"
                                             {...field} />
@@ -116,7 +124,15 @@ export const SignUpForm = () => {
                         )}
                     />
 
-                    <Button type="submit" className="w-full">Sign Up</Button>
+                    <AuthError message={error} />
+
+                    <Button
+                        disabled={isPending}
+                        type="submit"
+                        className="w-full"
+                    >
+                        Sign Up
+                    </Button>
                 </form>
             </Form>
         </CardWrapper>
