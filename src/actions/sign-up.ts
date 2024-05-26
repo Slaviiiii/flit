@@ -21,11 +21,13 @@ export const signUp = async (values: z.infer<typeof SignUpSchema>) => {
 
     const existingUser = await getUserByEmail(email);
 
-    console.log(existingUser);
-
     if (existingUser) {
         return { error: "Email is already taken!" };
     }
 
-    // await db.insert(users).values({ name, email, password: hashedPass });
+    const username = name.trim().split(" ")[0];
+
+    await db
+        .insert(users)
+        .values({ name, email, password: hashedPass, username });
 };

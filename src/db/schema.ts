@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
-import { relations } from "drizzle-orm";
+import { relations, Relations } from "drizzle-orm";
 import {
     integer,
     primaryKey,
@@ -11,11 +11,11 @@ export const users = sqliteTable("user", {
     id: text("id")
         .primaryKey()
         .$defaultFn(() => createId()),
-    name: text("name"),
-    username: text("username"),
+    name: text("name").notNull(),
+    username: text("username").notNull(),
     email: text("email").notNull(),
     emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
-    password: text("password"),
+    password: text("password").notNull(),
     image: text("image"),
 });
 
@@ -73,10 +73,10 @@ export const blogs = sqliteTable("blogs", {
     tags: text("tags").$type<string[]>(),
 });
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations: Relations = relations(users, ({ many }) => ({
     blogs: many(blogs),
 }));
 
-export const blogsRelations = relations(blogs, ({ one }) => ({
+export const blogsRelations: Relations = relations(blogs, ({ one }) => ({
     author: one(users, { fields: [blogs.authorId], references: [users.id] }),
 }));
