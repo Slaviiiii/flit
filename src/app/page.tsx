@@ -5,7 +5,7 @@ export default async function Home() {
 
   return (
     <main className="">
-      Your name: {session?.user?.id}
+      Your name: {session?.user?.name}
     </main>
   );
 }

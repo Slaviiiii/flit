@@ -16,7 +16,10 @@ import { Input } from "@/components/ui/input";
 
 import { SignInSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
+
 import { Eye, EyeOff } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -34,13 +37,19 @@ export const SignInForm = () => {
         },
     })
 
-    function onSubmit(values: z.infer<typeof SignInSchema>) {
-        setError("");
+    const router = useRouter();
 
+    const searchParams = useSearchParams();
+    const urlError = searchParams.get("error") === "OAuthAccountNotLinked"
+        ? "Email already in use with a different provider!"
+        : "";
+
+    function onSubmit(values: z.infer<typeof SignInSchema>) {
         startTransition(() => {
             signIn(values)
                 .then((data) => {
                     setError(data?.error);
+                    if (!data.error) return router.push("/");
                 })
         })
     }
@@ -105,7 +114,7 @@ export const SignInForm = () => {
                         )}
                     />
 
-                    <AuthError message={error} />
+                    <AuthError message={error || urlError} />
 
                     <Button
                         disabled={isPending}

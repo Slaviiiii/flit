@@ -1,5 +1,6 @@
 "use client";
 
+import { signIn } from "@/actions/sign-in";
 import { signUp } from "@/actions/sign-up";
 
 import { AuthError } from "@/components/auth/auth-error";
@@ -17,7 +18,10 @@ import { Input } from "@/components/ui/input";
 
 import { SignUpSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
+
 import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -36,13 +40,18 @@ export const SignUpForm = () => {
         },
     })
 
-    function onSubmit(values: z.infer<typeof SignUpSchema>) {
-        setError("");
+    const router = useRouter();
 
+    function onSubmit(values: z.infer<typeof SignUpSchema>) {
         startTransition(() => {
             signUp(values)
                 .then((data) => {
-                    setError(data?.error);
+                    if (data?.error) return setError(data?.error);
+                    signIn({ email: values.email, password: values.password })
+                        .then((data) => {
+                            setError(data?.error);
+                            if (!data.error) return router.push("/");
+                        })
                 })
         })
     }

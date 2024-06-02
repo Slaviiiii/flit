@@ -69,6 +69,7 @@ export const blogs = sqliteTable("blogs", {
         .references(() => users.id, { onDelete: "cascade" }),
     title: text("text").notNull(),
     description: text("text").notNull(),
+    banner: text("banner"),
     content: text("text", { mode: "json" }).notNull(),
     tags: text("tags").$type<string[]>(),
 });
